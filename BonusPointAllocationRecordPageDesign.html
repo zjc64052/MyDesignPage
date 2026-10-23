@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>积分划拨记录 · 页面设计</title>
+<style>
+  :root{
+    --bg:#f0f2f5; --panel:#fff; --line:#e6e9ef; --line2:#eef1f6;
+    --text:#1f2733; --text2:#5b6675; --text3:#8b95a3;
+    --brand:#2f6bff; --brand-soft:#eaf0ff;
+    --green:#12a06a; --green-soft:#e6f7ef;
+    --amber:#c47b00; --amber-soft:#fdf3e0;
+    --red:#d93025; --red-soft:#fdeceb;
+    --purple:#7a4de0; --purple-soft:#f1ebfe;
+    --radius:12px; --shadow:0 1px 2px rgba(16,24,40,.04),0 8px 24px rgba(16,24,40,.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:"PingFang SC","Microsoft YaHei","WenQuanYi Micro Hei",-apple-system,Segoe UI,sans-serif;
+    background:var(--bg); color:var(--text); line-height:1.6; padding:28px 20px 60px;
+  }
+  .wrap{max-width:1680px;margin:0 auto}
+
+  /* ============ 顶部标题 ============ */
+  .page-head{margin-bottom:22px}
+  .page-head h1{font-size:24px;font-weight:650;letter-spacing:.3px}
+  .page-head p{color:var(--text3);font-size:13px;margin-top:6px}
+
+  /* ============ 卡片通用 ============ */
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .card + .card{margin-top:16px}
+  .card-hd{display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:16px 20px;border-bottom:1px solid var(--line2)}
+  .card-hd h3{font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px}
+  .card-hd h3::before{content:"";width:3px;height:14px;border-radius:2px;background:var(--brand)}
+  .card-bd{padding:18px 20px}
+  .card-hd .link{font-size:12px;color:var(--brand);cursor:pointer;font-weight:500}
+  .card-hd .link:hover{text-decoration:underline}
+
+  /* ============ 筛选区 ============ */
+  .filter-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+  @media(max-width:1280px){.filter-grid{grid-template-columns:repeat(2,1fr)}}
+  .field label{display:block;font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:500}
+  .field .ctrl{position:relative}
+  input[type=text],input[type=datetime-local],select{
+    width:100%;height:36px;padding:0 12px;border:1px solid var(--line);border-radius:8px;
+    font-size:13px;color:var(--text);background:#fbfcfe;outline:none;transition:.18s;font-family:inherit;
+  }
+  input:focus,select:focus{border-color:var(--brand);background:#fff;box-shadow:0 0 0 3px rgba(47,107,255,.1)}
+  .date-range{display:flex;align-items:center;gap:8px}
+  .date-range span{color:var(--text3);font-size:12px;flex:none}
+  .filter-ft{display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding-top:14px;border-top:1px dashed var(--line)}
+  .btn{height:36px;padding:0 18px;border-radius:8px;border:1px solid var(--line);background:#fff;font-size:13px;cursor:pointer;transition:.18s;font-family:inherit;color:var(--text2)}
+  .btn:hover{border-color:var(--brand);color:var(--brand)}
+  .btn-primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  .btn-primary:hover{background:#245ae0;border-color:#245ae0;color:#fff}
+  .btn-ghost{background:#fff}
+  .ft-actions{display:flex;gap:10px}
+  .chip-group{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{height:32px;padding:0 14px;border-radius:16px;border:1px solid var(--line);background:#fff;font-size:12.5px;color:var(--text2);cursor:pointer;transition:.18s}
+  .chip:hover{border-color:var(--brand);color:var(--brand)}
+  .chip.on{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:500}
+
+  /* ============ 统计卡片 ============ */
+  .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:20px}
+  @media(max-width:1280px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .stat::after{content:"";position:absolute;right:-18px;top:-18px;width:70px;height:70px;border-radius:50%;opacity:.5}
+  .stat:nth-child(1)::after{background:var(--brand-soft)}
+  .stat:nth-child(2)::after{background:var(--green-soft)}
+  .stat:nth-child(3)::after{background:var(--amber-soft)}
+  .stat:nth-child(4)::after{background:var(--purple-soft)}
+  .stat:nth-child(5)::after{background:var(--red-soft)}
+  .stat .k{font-size:12.5px;color:var(--text3);display:flex;align-items:center;gap:6px}
+  .stat .v{font-size:24px;font-weight:650;margin-top:8px;letter-spacing:.3px}
+  .stat .d{font-size:11.5px;color:var(--text3);margin-top:6px}
+
+  /* ============ 表格工具栏 ============ */
+  .toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+  .tb-left{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2)}
+  .count-badge{background:var(--brand-soft);color:var(--brand);font-weight:600;padding:2px 10px;border-radius:12px;font-size:12px}
+  .tb-right{display:flex;gap:8px;flex-wrap:wrap}
+
+  /* ============ 表格 ============ */
+  .table-box{overflow:auto;max-height:none;border:1px solid var(--line);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow)}
+  table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;min-width:1640px}
+  thead th{position:sticky;top:0;z-index:3;background:#f7f9fc;font-weight:600;color:var(--text2);text-align:left;
+    padding:12px 14px;border-bottom:1px solid var(--line);white-space:nowrap;font-size:12.5px}
+  thead th::after{content:"";display:inline-block;width:0;height:0;margin-left:5px;border-left:3px solid transparent;border-right:3px solid transparent;border-top:4px solid #b9c2d0;vertical-align:middle;opacity:.6}
+  thead th:last-child::after{display:none}
+  tbody td{padding:13px 14px;border-bottom:1px solid var(--line2);vertical-align:top;color:var(--text)}
+  tbody tr{transition:.14s}
+  tbody tr:hover{background:#fafcff;box-shadow:inset 3px 0 0 var(--brand)}
+  tbody tr:last-child td{border-bottom:none}
+  .col-flow{text-align:center!important;width:56px}
+  .col-flow .arrow{color:#b9c2d0;font-size:15px}
+  .id{font-size:11.5px;color:var(--text3);font-family:ui-monospace,Menlo,Consolas,monospace}
+  .nick{font-weight:500;font-size:13px}
+  .dept{font-size:11.5px;color:var(--text3);margin-top:2px}
+  .balance{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px}
+  .balance .unit{color:var(--text3);font-size:11px;margin-left:1px}
+  .reason{color:var(--text2);max-width:210px}
+  .amount{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:600;text-align:right;white-space:nowrap}
+  .amount .u{color:var(--text3);font-size:11px;margin-left:1px}
+  .time{font-size:12px;color:var(--text2);white-space:nowrap}
+  .time small{display:block;color:var(--text3);font-size:11px;margin-top:1px}
+
+  /* 事项类型标签 —— 4 种 */
+  .matter{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:500;white-space:nowrap;line-height:1.4}
+  .matter i{width:5px;height:5px;border-radius:50%;background:currentColor;display:inline-block;flex:none}
+  .matter.m1{background:var(--brand-soft);color:var(--brand)}
+  .matter.m2{background:var(--green-soft);color:var(--green)}
+  .matter.m3{background:var(--amber-soft);color:var(--amber)}
+  .matter.m4{background:var(--purple-soft);color:var(--purple)}
+
+  /* 操作类型标签 —— 4 种 */
+  .op{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:500;white-space:nowrap}
+  .op i{width:5px;height:5px;border-radius:50%;background:currentColor;display:inline-block}
+  .op.in{background:var(--green-soft);color:var(--green)}
+  .op.out{background:var(--amber-soft);color:var(--amber)}
+  .op.adj{background:var(--brand-soft);color:var(--brand)}
+  .op.recall{background:var(--red-soft);color:var(--red)}
+  .row-actions{display:flex;gap:6px}
+  .link-btn{background:none;border:none;color:var(--brand);font-size:12.5px;cursor:pointer;padding:2px 4px;white-space:nowrap}
+  .link-btn:hover{text-decoration:underline}
+  .link-btn.danger{color:var(--red)}
+  .diff{font-size:11px;margin-top:2px}
+  .diff.up{color:var(--green)}
+  .diff.down{color:var(--red)}
+
+  /* ============ 分页 ============ */
+  .pager{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-top:1px solid var(--line);font-size:12.5px;color:var(--text2);flex-wrap:wrap;gap:10px}
+  .pager .nums{display:flex;gap:4px;align-items:center}
+  .pager .nums button{width:32px;height:32px;border-radius:6px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:13px;color:var(--text2)}
+  .pager .nums button.cur{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+  .pager .nums button:hover:not(.cur){border-color:var(--brand);color:var(--brand)}
+  .pager select{width:auto;height:32px;padding:0 8px}
+
+  /* ============ 下方说明区（双栏） ============ */
+  .layout-bottom{display:grid;grid-template-columns:272px minmax(0,1fr);gap:20px;align-items:start}
+  @media(max-width:1280px){.layout-bottom{grid-template-columns:1fr}}
+
+  .note{font-size:13px;color:var(--text2);line-height:1.85}
+  .note ul{list-style:none;margin-top:6px}
+  .note li{padding-left:14px;position:relative}
+  .note li::before{content:"";position:absolute;left:0;top:10px;width:5px;height:5px;border-radius:50%;background:var(--brand)}
+  .note b{color:var(--text)}
+  .legend{display:flex;flex-direction:column;gap:10px;margin-top:4px}
+  .legend .item{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text2)}
+  .swatch{width:14px;height:14px;border-radius:4px;flex:none}
+
+  .section-title{display:flex;align-items:center;gap:10px;margin:30px 0 14px}
+  .section-title h2{font-size:17px;font-weight:600}
+  .section-title span{font-size:12px;color:var(--text3)}
+  .divider{flex:1;height:1px;background:var(--line)}
+
+  .tag{font-size:11px;padding:1px 7px;border-radius:4px;background:var(--brand-soft);color:var(--brand);font-weight:500}
+  .tag.new{background:var(--purple-soft);color:var(--purple)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="page-head">
+    <h1>积分划拨记录</h1>
+    <p>覆盖积分调拨全链路留痕 —— 谁划出、谁到账、划拨前后余额、划拨原因、事项类型与操作类型，支持按账号 / 部门 / 时间 / 额度区间 / 事项类型 / 操作类型多维筛选，并可导出审计台账。</p>
+  </div>
+
+  <!-- ================= ① 统计概览（前置，一屏掌握关键指标） ================= -->
+  <div class="stats">
+    <div class="stat"><div class="k">📊 划拨总笔数</div><div class="v">1,286</div><div class="d">较上月 ↑ 8.4%</div></div>
+    <div class="stat"><div class="k">💰 划拨积分总额</div><div class="v">846,500</div><div class="d">平均单笔 658 分</div></div>
+    <div class="stat"><div class="k">📤 净划出额度</div><div class="v">632,120</div><div class="d">付款方净流出</div></div>
+    <div class="stat"><div class="k">↺ 回收 / 撤销额度</div><div class="v">12,400</div><div class="d">本月 9 笔</div></div>
+    <div class="stat"><div class="k">🏷️ 事项类型分布</div><div class="v" style="font-size:16px;line-height:1.5">3 : 1 : 7 : 4<span style="font-size:11px;color:var(--text3);font-weight:400;margin-left:4px">种</span></div><div class="d">充值占比最高 54%</div></div>
+  </div>
+
+  <!-- ================= ② 筛选条件（统计之后，紧贴表格上方） ================= -->
+  <div class="card">
+    <div class="card-hd"><h3>筛选条件</h3><span class="tag">可折叠</span></div>
+    <div class="card-bd">
+      <div class="filter-grid">
+        <div class="field">
+          <label>付款者账号 ID</label>
+          <input type="text" placeholder="输入账号 ID">
+        </div>
+        <div class="field">
+          <label>付款者昵称</label>
+          <input type="text" placeholder="输入昵称关键字">
+        </div>
+        <div class="field">
+          <label>付款者归属部门</label>
+          <select><option>全部部门</option><option>总部财务部</option><option>华南大区</option><option>华东大区</option><option>产品研发中心</option></select>
+        </div>
+        <div class="field">
+          <label>事项类型</label>
+          <select><option>全部事项</option><option>团队版开户预存</option><option>代理商开户预存</option><option>代理商充值积分</option><option>代理商向代理商的客户划拨积分</option></select>
+        </div>
+        <div class="field">
+          <label>操作类型</label>
+          <select><option>全部类型</option><option>手动划拨</option><option>自动划拨</option><option>积分回收</option><option>积分调整</option></select>
+        </div>
+        <div class="field" style="grid-column:span 2">
+          <label>划拨时间</label>
+          <div class="date-range">
+            <input type="datetime-local" style="flex:1"> <span>—</span> <input type="datetime-local" style="flex:1">
+          </div>
+        </div>
+        <div class="field">
+          <label>划拨额度区间</label>
+          <div class="date-range">
+            <input type="text" placeholder="最小额度" style="flex:1"> <span>—</span> <input type="text" placeholder="最大额度" style="flex:1">
+          </div>
+        </div>
+        <div class="field">
+          <label>划拨原因</label>
+          <select><option>全部原因</option><option>活动奖励发放</option><option>员工激励</option><option>客户回馈</option><option>内部调账</option><option>积分回收</option></select>
+        </div>
+      </div>
+      <div style="margin-top:16px">
+        <label style="font-size:12px;color:var(--text2);font-weight:500">快捷时间</label>
+        <div class="chip-group" style="margin-top:8px">
+          <button class="chip">今天</button>
+          <button class="chip">近 7 天</button>
+          <button class="chip on">近 30 天</button>
+          <button class="chip">本月</button>
+          <button class="chip">上月</button>
+          <button class="chip">本季度</button>
+        </div>
+      </div>
+      <div class="filter-ft">
+        <button class="btn">↺ 重置全部条件</button>
+        <div class="ft-actions">
+          <button class="btn btn-ghost">⇩ 导出 Excel</button>
+          <button class="btn btn-primary">查询</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= ③ 划拨明细记录 ================= -->
+  <div class="card">
+    <div class="card-hd">
+      <h3>划拨明细记录</h3>
+      <span class="tag">近 30 天 · 已筛选 1,286 条</span>
+    </div>
+    <div class="card-bd" style="padding:16px 20px">
+      <div class="toolbar">
+        <div class="tb-left">已选 <span class="count-badge">0</span> 项　<a class="link-btn">批量导出</a>　<a class="link-btn">批量撤销（仅回收类）</a></div>
+        <div class="tb-right">
+          <button class="btn">⤓ 导出</button>
+          <button class="btn">⚙ 列设置</button>
+          <button class="btn btn-primary">＋ 新建划拨</button>
+        </div>
+      </div>
+    </div>
+    <div class="table-box">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:44px"><input type="checkbox"></th>
+            <th style="width:190px">付款者（账号 / 昵称 / 部门）</th>
+            <th style="width:130px">划拨后余额</th>
+            <th class="col-flow">流向</th>
+            <th style="width:190px">收款者（账号 / 昵称 / 部门）</th>
+            <th style="width:130px">到账后余额</th>
+            <th style="width:200px">事项类型</th>
+            <th style="width:200px">划拨原因</th>
+            <th style="width:130px">划拨额度</th>
+            <th style="width:150px">划拨时间</th>
+            <th style="width:120px">操作类型</th>
+            <th style="width:150px">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td>
+              <div class="nick">总部积分池</div>
+              <div class="id">ID: OP-CENTER-001</div>
+              <div class="dept">总部财务部</div>
+            </td>
+            <td><span class="balance">1,240,500<span class="unit"> 分</span></span><div class="diff down">↓ -2,000</div></td>
+            <td class="col-flow"><span class="arrow">➤</span></td>
+            <td>
+              <div class="nick">陈晓彤</div>
+              <div class="id">ID: U-100862</div>
+              <div class="dept">华南大区 · 销售一部</div>
+            </td>
+            <td><span class="balance">8,640<span class="unit"> 分</span></span><div class="diff up">↑ +2,000</div></td>
+            <td><span class="matter m3"><i></i>代理商充值积分</span></td>
+            <td><span class="reason">Q3 季度优秀员工奖励发放</span></td>
+            <td class="amount">2,000 <span class="u">分</span></td>
+            <td class="time">2026-10-22 14:32<small>操作员：李文博</small></td>
+            <td><span class="op in"><i></i>手动划拨</span></td>
+            <td><div class="row-actions"><button class="link-btn">详情</button><button class="link-btn">凭证</button></div></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td>
+              <div class="nick">总部积分池</div>
+              <div class="id">ID: OP-CENTER-001</div>
+              <div class="dept">总部财务部</div>
+            </td>
+            <td><span class="balance">1,242,500<span class="unit"> 分</span></span><div class="diff down">↓ -500</div></td>
+            <td class="col-flow"><span class="arrow">➤</span></td>
+            <td>
+              <div class="nick">林知远</div>
+              <div class="id">ID: U-100743</div>
+              <div class="dept">产品研发中心 · 前端组</div>
+            </td>
+            <td><span class="balance">3,210<span class="unit"> 分</span></span><div class="diff up">↑ +500</div></td>
+            <td><span class="matter m1"><i></i>团队版开户预存</span></td>
+            <td><span class="reason">双十一预热活动 · 参与奖自动发放</span></td>
+            <td class="amount">500 <span class="u">分</span></td>
+            <td class="time">2026-10-22 10:05<small>系统自动执行</small></td>
+            <td><span class="op adj"><i></i>自动划拨</span></td>
+            <td><div class="row-actions"><button class="link-btn">详情</button><button class="link-btn">规则</button></div></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td>
+              <div class="nick">总部积分池</div>
+              <div class="id">ID: OP-CENTER-001</div>
+              <div class="dept">总部财务部</div>
+            </td>
+            <td><span class="balance">1,247,500<span class="unit"> 分</span></span><div class="diff down">↓ -10,000</div></td>
+            <td class="col-flow"><span class="arrow">➤</span></td>
+            <td>
+              <div class="nick">广州聚力科技（代理商）</div>
+              <div class="id">ID: A-200315</div>
+              <div class="dept">华南大区 · 代理商</div>
+            </td>
+            <td><span class="balance">120,000<span class="unit"> 分</span></span><div class="diff up">↑ +10,000</div></td>
+            <td><span class="matter m2"><i></i>代理商开户预存</span></td>
+            <td><span class="reason">代理商开户初始预存额度</span></td>
+            <td class="amount">10,000 <span class="u">分</span></td>
+            <td class="time">2026-10-21 16:48<small>审批单：SP-2026-0881</small></td>
+            <td><span class="op in"><i></i>手动划拨</span></td>
+            <td><div class="row-actions"><button class="link-btn">详情</button><button class="link-btn">审批单</button></div></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td>
+              <div class="nick">广州聚力科技（代理商）</div>
+              <div class="id">ID: A-200315</div>
+              <div class="dept">华南大区 · 代理商</div>
+            </td>
+            <td><span class="balance">110,000<span class="unit"> 分</span></span><div class="diff down">↓ -5,000</div></td>
+            <td class="col-flow"><span class="arrow">➤</span></td>
+            <td>
+              <div class="nick">周沐阳（代理商客户）</div>
+              <div class="id">ID: C-300588</div>
+              <div class="dept">代理商客户</div>
+            </td>
+            <td><span class="balance">21,400<span class="unit"> 分</span></span><div class="diff up">↑ +5,000</div></td>
+            <td><span class="matter m4"><i></i>代理商向代理商的客户划拨积分</span></td>
+            <td><span class="reason">代理商给客户下发积分</span></td>
+            <td class="amount">5,000 <span class="u">分</span></td>
+            <td class="time">2026-10-21 09:15<small>操作员：代理商后台</small></td>
+            <td><span class="op in"><i></i>手动划拨</span></td>
+            <td><div class="row-actions"><button class="link-btn">详情</button><button class="link-btn">客户明细</button></div></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td>
+              <div class="nick">风控系统账户</div>
+              <div class="id">ID: SYS-RISK-007</div>
+              <div class="dept">系统内部账户</div>
+            </td>
+            <td><span class="balance">320,000<span class="unit"> 分</span></span><div class="diff up">↑ +1,200</div></td>
+            <td class="col-flow"><span class="arrow">➤</span></td>
+            <td>
+              <div class="nick">赵思琪</div>
+              <div class="id">ID: U-100512</div>
+              <div class="dept">华南大区 · 客户成功部</div>
+            </td>
+            <td><span class="balance">0<span class="unit"> 分</span></span><div class="diff down">↓ -1,200</div></td>
+            <td><span class="matter m3"><i></i>代理商充值积分</span></td>
+            <td><span class="reason">违规刷分行为处罚 · 积分回收</span></td>
+            <td class="amount" style="color:#d93025">-1,200 <span class="u">分</span></td>
+            <td class="time">2026-10-21 09:15<small>操作员：风控系统</small></td>
+            <td><span class="op recall"><i></i>积分回收</span></td>
+            <td><div class="row-actions"><button class="link-btn">详情</button><button class="link-btn">处罚单</button></div></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td>
+              <div class="nick">总部积分池</div>
+              <div class="id">ID: OP-CENTER-001</div>
+              <div class="dept">总部财务部</div>
+            </td>
+            <td><span class="balance">1,257,500<span class="unit"> 分</span></span><div class="diff down">↓ -88,000</div></td>
+            <td class="col-flow"><span class="arrow">➤</span></td>
+            <td>
+              <div class="nick">多位用户 · 批量发放</div>
+              <div class="id">ID: BATCH-20261018-09</div>
+              <div class="dept">—</div>
+            </td>
+            <td><span class="balance">—<span class="unit"></span></span><div class="diff up">↑ 共 1,760 人</div></td>
+            <td><span class="matter m3"><i></i>代理商充值积分</span></td>
+            <td><span class="reason">双十一预热抽奖 · 批量发放</span></td>
+            <td class="amount">88,000 <span class="u">分</span></td>
+            <td class="time">2026-10-18 20:00<small>批次号：B20261018</small></td>
+            <td><span class="op adj"><i></i>自动划拨</span></td>
+            <td><div class="row-actions"><button class="link-btn">详情</button><button class="link-btn">批次明细</button></div></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td>
+              <div class="nick">积分清算账户</div>
+              <div class="id">ID: OP-SETTLE-012</div>
+              <div class="dept">总部财务部</div>
+            </td>
+            <td><span class="balance">86,300<span class="unit"> 分</span></span><div class="diff up">↑ +3,000</div></td>
+            <td class="col-flow"><span class="arrow">➤</span></td>
+            <td>
+              <div class="nick">总部积分池</div>
+              <div class="id">ID: OP-CENTER-001</div>
+              <div class="dept">总部财务部</div>
+            </td>
+            <td><span class="balance">1,257,500<span class="unit"> 分</span></span><div class="diff down">↓ -3,000</div></td>
+            <td><span class="matter m1"><i></i>团队版开户预存</span></td>
+            <td><span class="reason">年末积分清零政策调整 · 额度回滚</span></td>
+            <td class="amount" style="color:#c47b00">± 3,000 <span class="u">分</span></td>
+            <td class="time">2026-10-19 11:30<small>审批单：SP-2026-0875</small></td>
+            <td><span class="op adj"><i></i>积分调整</span></td>
+            <td><div class="row-actions"><button class="link-btn">详情</button><button class="link-btn">变更记录</button></div></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td>
+              <div class="nick">总部积分池</div>
+              <div class="id">ID: OP-CENTER-001</div>
+              <div class="dept">总部财务部</div>
+            </td>
+            <td><span class="balance">1,260,500<span class="unit"> 分</span></span><div class="diff down">↓ -150</div></td>
+            <td class="col-flow"><span class="arrow">➤</span></td>
+            <td>
+              <div class="nick">何景行</div>
+              <div class="id">ID: U-100477</div>
+              <div class="dept">产品研发中心 · 测试组</div>
+            </td>
+            <td><span class="balance">1,850<span class="unit"> 分</span></span><div class="diff up">↑ +150</div></td>
+            <td><span class="matter m2"><i></i>代理商开户预存</span></td>
+            <td><span class="reason">Bug 提交与修复激励（周度）</span></td>
+            <td class="amount">150 <span class="u">分</span></td>
+            <td class="time">2026-10-19 09:00<small>系统自动执行</small></td>
+            <td><span class="op adj"><i></i>自动划拨</span></td>
+            <td><div class="row-actions"><button class="link-btn">详情</button><button class="link-btn">规则</button></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pager">
+      <span>共 1,286 条记录 · 每页 20 条</span>
+      <div class="nums">
+        <button>‹</button><button>1</button><button class="cur">2</button><button>3</button><button>4</button><button>…</button><button>65</button><button>›</button>
+        <select><option>20 条/页</option><option>50 条/页</option><option>100 条/页</option></select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= ④ 详情弹窗预览 ================= -->
+  <div class="card">
+    <div class="card-hd"><h3>记录详情弹窗（交互预览）</h3><span class="tag">点击「详情」触发</span></div>
+    <div class="card-bd">
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;padding:6px 4px">
+        <div style="border:1px solid var(--line);border-radius:10px;padding:16px;background:#fbfcfe">
+          <div style="font-size:12px;color:var(--text3);margin-bottom:8px">付款方</div>
+          <div style="font-weight:600">总部积分池</div>
+          <div class="id">ID: OP-CENTER-001</div>
+          <div class="dept">总部财务部</div>
+          <div style="margin-top:12px;font-size:12px;color:var(--text2)">划拨后余额 <b style="font-size:16px;color:var(--text);font-family:ui-monospace,monospace">1,240,500</b> 分</div>
+        </div>
+        <div style="text-align:center;color:var(--brand);font-size:22px;font-weight:700">2,000 分<br><span style="font-size:12px;font-weight:400;color:var(--text3)">➤ 划拨流向</span></div>
+        <div style="border:1px solid var(--line);border-radius:10px;padding:16px;background:#fbfcfe">
+          <div style="font-size:12px;color:var(--text3);margin-bottom:8px">收款方</div>
+          <div style="font-weight:600">陈晓彤</div>
+          <div class="id">ID: U-100862</div>
+          <div class="dept">华南大区 · 销售一部</div>
+          <div style="margin-top:12px;font-size:12px;color:var(--text2)">到账后余额 <b style="font-size:16px;color:var(--text);font-family:ui-monospace,monospace">8,640</b> 分</div>
+        </div>
+      </div>
+      <div style="margin-top:16px;display:grid;grid-template-columns:repeat(2,1fr);gap:12px;font-size:13px">
+        <div style="padding:10px 12px;background:#f7f9fc;border-radius:8px"><span style="color:var(--text3)">事项类型：</span><span class="matter m3"><i></i>代理商充值积分</span></div>
+        <div style="padding:10px 12px;background:#f7f9fc;border-radius:8px"><span style="color:var(--text3)">操作类型：</span><span class="op in"><i></i>手动划拨</span></div>
+        <div style="padding:10px 12px;background:#f7f9fc;border-radius:8px"><span style="color:var(--text3)">划拨原因：</span>Q3 季度优秀员工奖励发放</div>
+        <div style="padding:10px 12px;background:#f7f9fc;border-radius:8px"><span style="color:var(--text3)">划拨时间：</span>2026-10-22 14:32:08</div>
+        <div style="padding:10px 12px;background:#f7f9fc;border-radius:8px"><span style="color:var(--text3)">操作人：</span>李文博（财务部）</div>
+        <div style="padding:10px 12px;background:#f7f9fc;border-radius:8px"><span style="color:var(--text3)">划拨额度：</span><b>2,000 分</b></div>
+        <div style="padding:10px 12px;background:#f7f9fc;border-radius:8px;grid-column:span 2"><span style="color:var(--text3)">关联凭证：</span>审批单 SP-2026-0881 / 附件回执 IMG_20261022.pdf</div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:10px;justify-content:flex-end">
+        <button class="btn">导出凭证</button>
+        <button class="btn">撤销划拨</button>
+        <button class="btn btn-primary">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= ⑤ 设计说明 + 图例（表格下方） ================= -->
+  <div class="layout-bottom">
+    <div>
+      <div class="card">
+        <div class="card-hd"><h3>事项类型图例</h3><span class="tag new">核心字段</span></div>
+        <div class="card-bd">
+          <div class="legend">
+            <div class="item"><span class="swatch" style="background:#2f6bff"></span><b>团队版开户预存</b></div>
+            <div class="item"><span class="swatch" style="background:#12a06a"></span><b>代理商开户预存</b></div>
+            <div class="item"><span class="swatch" style="background:#c47b00"></span><b>代理商充值积分</b></div>
+            <div class="item"><span class="swatch" style="background:#7a4de0"></span><b>代理商向代理商的客户划拨积分</b></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><h3>操作类型图例</h3></div>
+        <div class="card-bd">
+          <div class="legend">
+            <div class="item"><span class="swatch" style="background:#12a06a"></span>手动划拨 —— 运营人员人工调拨</div>
+            <div class="item"><span class="swatch" style="background:#2f6bff"></span>自动划拨 —— 系统按规则自动发放</div>
+            <div class="item"><span class="swatch" style="background:#c47b00"></span>积分调整 —— 因活动/政策修正额度</div>
+            <div class="item"><span class="swatch" style="background:#d93025"></span>积分回收 —— 违规/过期/撤销回收</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-hd"><h3>设计说明</h3></div>
+        <div class="card-bd note">
+          <b>页面定位：</b>积分管理后台的<b>审计与对账</b>核心页面，强调留痕完整性、查询效率与可读性。
+          <ul>
+            <li><b>筛选前置</b>：筛选条件紧贴表格上方，全屏时始终与数据同行显示，无需横向滚动或左右分栏寻找。</li>
+            <li><b>信息分组</b>：付款方 / 收款方各自成组，中间用流向箭头连接，一眼看懂「谁 → 谁」。</li>
+            <li><b>事项类型独立成列</b>：作为业务场景的<b>首要分类维度</b>，用 4 色标签区分，与"操作类型"形成「业务场景 × 执行方式」双轴。</li>
+            <li><b>划拨前后余额</b>：同时展示划拨后余额与余额变动幅度（↑ ↓），便于对账与异常识别。</li>
+            <li><b>操作类型标签化</b>：手动划拨 / 自动划拨 / 积分回收 / 积分调整用 4 色语义区分。</li>
+            <li><b>表格密度</b>：适中密度 + 悬停高亮，横向滚动保留冻结逻辑。</li>
+            <li><b>顶部统计</b>：划拨笔数、总额度、净流出、回收额度、事项分布一屏掌握。</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><h3>页面结构拆解</h3><span>布局 · 信息层级 · 交互</span></div>
+        <div class="card-bd note">
+          <table style="width:100%;border-collapse:collapse;font-size:13px">
+            <thead>
+              <tr style="background:#f7f9fc">
+                <th style="padding:10px 12px;text-align:left;color:var(--text2);font-weight:600;border-bottom:1px solid var(--line);width:150px">模块</th>
+                <th style="padding:10px 12px;text-align:left;color:var(--text2);font-weight:600;border-bottom:1px solid var(--line)">内容说明</th>
+                <th style="padding:10px 12px;text-align:left;color:var(--text2);font-weight:600;border-bottom:1px solid var(--line);width:220px">设计要点</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:10px 12px;border-bottom:1px solid var(--line2);font-weight:600">① 页面标题区</td><td style="padding:10px 12px;border-bottom:1px solid var(--line2);color:var(--text2)">面包屑 + 页面标题 + 一句话说明</td><td style="padding:10px 12px;border-bottom:1px solid var(--line2)">页面最顶部，全屏时居中最大宽度</td></tr>
+              <tr><td style="padding:10px 12px;border-bottom:1px solid var(--line2);font-weight:600">② 筛选条件</td><td style="padding:10px 12px;border-bottom:1px solid var(--line2);color:var(--text2)">账号 ID / 昵称 / 归属部门 / <b>事项类型</b> / 操作类型 / 划拨时间 / 额度区间 / 划拨原因</td><td style="padding:10px 12px;border-bottom:1px solid var(--line2)">紧贴表格上方，全屏同行可见，支持多选与快捷时间</td></tr>
+              <tr><td style="padding:10px 12px;border-bottom:1px solid var(--line2);font-weight:600">③ 统计概览</td><td style="padding:10px 12px;border-bottom:1px solid var(--line2);color:var(--text2)">笔数、总额度、净划出、回收额度、<b>事项类型分布</b></td><td style="padding:10px 12px;border-bottom:1px solid var(--line2)">5 张卡片横向铺满，数字大字号 + 事项占比</td></tr>
+              <tr><td style="padding:10px 12px;border-bottom:1px solid var(--line2);font-weight:600">④ 明细表格</td><td style="padding:10px 12px;border-bottom:1px solid var(--line2);color:var(--text2)">付款方 → 收款方流向，含余额、<b>事项类型</b>、原因、额度、时间、操作类型</td><td style="padding:10px 12px;border-bottom:1px solid var(--line2)">事项类型用彩色标签，扫读效率最高</td></tr>
+              <tr><td style="padding:10px 12px;border-bottom:1px solid var(--line2);font-weight:600">⑤ 详情弹窗</td><td style="padding:10px 12px;border-bottom:1px solid var(--line2);color:var(--text2)">付款方与收款方左右对照卡 + <b>事项类型</b> + 划拨信息 + 关联凭证 + 撤销操作</td><td style="padding:10px 12px;border-bottom:1px solid var(--line2)">弹窗式而非新开页，减少上下文丢失</td></tr>
+              <tr><td style="padding:10px 12px;font-weight:600">⑥ 设计说明 / 图例</td><td style="padding:10px 12px;color:var(--text2)">标签配色规则、字段分组逻辑、审计与对账要点</td><td style="padding:10px 12px">表格下方，不影响主流程浏览</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
