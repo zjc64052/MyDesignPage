@@ -84,7 +84,6 @@
   td.nick{font-weight:500;}
   td.amt{font-variant-numeric:tabular-nums;font-weight:600;color:#1f2733;}
   td.time{color:var(--sub);white-space:nowrap;font-variant-numeric:tabular-nums;}
-  td.promo{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:var(--primary);}
   .empty{text-align:center;color:var(--sub);padding:48px 0;}
 
   /* 合计行 */
@@ -105,7 +104,7 @@
   <div class="card">
     <div class="page-head">
       <h1>推广码充值统计</h1>
-      <p>按时间段、用户昵称与推广码筛选充值记录，查看对应合计数据。</p>
+      <p>按时间段与用户昵称筛选充值记录，查看对应合计数据。</p>
     </div>
 
     <!-- 筛选区 -->
@@ -121,10 +120,6 @@
       <div class="field">
         <label for="nickname">用户昵称</label>
         <input type="text" id="nickname" placeholder="请输入昵称关键词">
-      </div>
-      <div class="field">
-        <label for="promoCode">推广码</label>
-        <input type="text" id="promoCode" placeholder="请输入推广码" style="width:170px">
       </div>
       <button class="btn primary" id="btnSearch">查询</button>
       <button class="btn" id="btnReset">重置</button>
@@ -146,13 +141,12 @@
             <th>用户昵称</th>
             <th style="width:160px">充值金额</th>
             <th style="width:190px">创建时间</th>
-            <th style="width:150px">推广码</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
         <tfoot>
           <tr>
-            <td colspan="3">合计</td>
+            <td colspan="2">合计</td>
             <td class="amt" id="footAmount">¥0.00</td>
             <td id="footCount"></td>
           </tr>
@@ -166,36 +160,18 @@
 <script>
 /* ============ 模拟数据（接入真实接口时替换 fetchList 即可） ============ */
 const MOCK = [
-  {id:10240,nickname:"清风徐来",amount:199.00,createdAt:"2026-10-20 21:05:12",promoCode:"TG2026A01"},
-  {id:10239,nickname:"星辰大海",amount:99.00,createdAt:"2026-10-20 18:42:30",promoCode:"TG2026A01"},
-  {id:10238,nickname:"阿波罗",amount:599.00,createdAt:"2026-10-20 16:11:58",promoCode:"VIP888"},
-  {id:10237,nickname:"橘子汽水",amount:89.00,createdAt:"2026-10-20 14:28:44",promoCode:"PROMO100"},
-  {id:10236,nickname:"云端漫步",amount:329.00,createdAt:"2026-10-20 11:55:21",promoCode:"VIP888"},
-  {id:10235,nickname:"北极星",amount:79.00,createdAt:"2026-10-20 09:40:33",promoCode:"TEST666"},
-  {id:10234,nickname:"夜行者",amount:259.00,createdAt:"2026-10-20 07:15:08",promoCode:"PROMO100"},
-  {id:10233,nickname:"小布丁",amount:29.00,createdAt:"2026-10-19 22:48:52",promoCode:"TG2026B17"},
-  {id:10232,nickname:"猫小九",amount:159.00,createdAt:"2026-10-19 20:02:55",promoCode:"NEW2026"},
-  {id:10231,nickname:"阿波罗",amount:99.00,createdAt:"2026-10-19 17:57:40",promoCode:"VIP888"},
-  {id:10230,nickname:"云端漫步",amount:499.00,createdAt:"2026-10-19 15:21:19",promoCode:"PROMO100"},
-  {id:10229,nickname:"星辰大海",amount:99.00,createdAt:"2026-10-19 13:09:00",promoCode:"TG2026C03"},
-  {id:10228,nickname:"阿波罗",amount:599.00,createdAt:"2026-10-19 10:05:17",promoCode:"VIP888"},
-  {id:10227,nickname:"橘子汽水",amount:89.00,createdAt:"2026-10-18 21:33:11",promoCode:"PROMO100"},
-  {id:10226,nickname:"夜行者",amount:399.00,createdAt:"2026-10-18 18:02:36",promoCode:"VIP888"},
-  {id:10225,nickname:"清风徐来",amount:199.00,createdAt:"2026-10-18 15:21:09",promoCode:"TG2026A01"},
-  {id:10224,nickname:"北极星",amount:299.00,createdAt:"2026-10-18 12:48:02",promoCode:"VIP888"},
-  {id:10223,nickname:"一只小狐狸",amount:699.00,createdAt:"2026-10-17 23:40:23",promoCode:"FOX666"},
-  {id:10222,nickname:"小笼包",amount:129.00,createdAt:"2026-10-17 20:05:11",promoCode:"NEW2026"},
-  {id:10221,nickname:"云端漫步",amount:499.00,createdAt:"2026-10-16 17:14:46",promoCode:"VIP888"},
-  {id:10220,nickname:"猫小九",amount:39.00,createdAt:"2026-10-15 14:33:47",promoCode:"TEST666"},
-  {id:10219,nickname:"阿波罗",amount:199.00,createdAt:"2026-10-15 11:00:00",promoCode:"VIP888"},
-  {id:10218,nickname:"小笼包",amount:59.00,createdAt:"2026-10-15 08:12:30",promoCode:"NEW2026"},
-  {id:10217,nickname:"云淡风轻",amount:49.00,createdAt:"2026-10-14 13:17:45",promoCode:"TG2026B17"},
-  {id:10216,nickname:"夜行者",amount:199.00,createdAt:"2026-10-13 19:26:11",promoCode:"TG2026C03"},
-  {id:10215,nickname:"橘子汽水",amount:159.00,createdAt:"2026-10-13 16:52:08",promoCode:"NEW2026"},
-  {id:10214,nickname:"北极星",amount:79.00,createdAt:"2026-10-12 12:44:19",promoCode:"PROMO100"},
-  {id:10213,nickname:"清风徐来",amount:199.00,createdAt:"2026-10-12 09:31:52",promoCode:"TG2026A01"},
-  {id:10212,nickname:"小布丁",amount:29.00,createdAt:"2026-10-11 20:08:37",promoCode:"TG2026B17"},
-  {id:10211,nickname:"星辰大海",amount:99.00,createdAt:"2026-10-11 10:55:00",promoCode:"TG2026C03"}
+  {id:10231,nickname:"清风徐来",amount:199.00,createdAt:"2026-10-20 09:12:44"},
+  {id:10230,nickname:"星辰大海",amount:99.00,createdAt:"2026-10-20 08:30:01"},
+  {id:10228,nickname:"阿波罗",amount:599.00,createdAt:"2026-10-19 22:05:17"},
+  {id:10225,nickname:"小布丁",amount:29.00,createdAt:"2026-10-19 17:48:52"},
+  {id:10222,nickname:"清风徐来",amount:199.00,createdAt:"2026-10-18 14:21:09"},
+  {id:10220,nickname:"夜行者",amount:399.00,createdAt:"2026-10-18 11:02:36"},
+  {id:10218,nickname:"星辰大海",amount:99.00,createdAt:"2026-10-17 20:55:00"},
+  {id:10215,nickname:"一只小狐狸",amount:699.00,createdAt:"2026-10-16 16:40:23"},
+  {id:10210,nickname:"阿波罗",amount:199.00,createdAt:"2026-10-15 09:00:00"},
+  {id:10208,nickname:"云淡风轻",amount:49.00,createdAt:"2026-10-14 13:17:45"},
+  {id:10205,nickname:"小布丁",amount:99.00,createdAt:"2026-10-13 19:26:11"},
+  {id:10201,nickname:"夜行者",amount:199.00,createdAt:"2026-10-12 10:44:58"}
 ];
 
 /* 模拟接口请求 */
@@ -206,7 +182,6 @@ function fetchList(params){
         if(params.start && r.createdAt.slice(0,10) < params.start) return false;
         if(params.end && r.createdAt.slice(0,10) > params.end) return false;
         if(params.nickname && !r.nickname.toLowerCase().includes(params.nickname.toLowerCase())) return false;
-        if(params.promoCode && !r.promoCode.toLowerCase().includes(params.promoCode.toLowerCase())) return false;
         return true;
       });
       resolve(rows);
@@ -230,8 +205,7 @@ async function load(){
   const params = {
     start: $('startDate').value,
     end:   $('endDate').value,
-    nickname: $('nickname').value.trim(),
-    promoCode: $('promoCode').value.trim()
+    nickname: $('nickname').value.trim()
   };
   if(params.start && params.end && params.start > params.end){
     alert('开始日期不能晚于结束日期');
@@ -261,8 +235,7 @@ function render(rows){
       '<td class="id">'+r.id+'</td>'+
       '<td class="nick">'+escapeHtml(r.nickname)+'</td>'+
       '<td class="amt">'+money(r.amount)+'</td>'+
-      '<td class="time">'+fmtTime(r.createdAt)+'</td>'+
-      '<td class="promo">'+escapeHtml(r.promoCode)+'</td>';
+      '<td class="time">'+fmtTime(r.createdAt)+'</td>';
     frag.appendChild(tr);
   });
   tb.appendChild(frag);
@@ -284,7 +257,6 @@ $('btnReset').addEventListener('click',()=>{
   $('startDate').value='';
   $('endDate').value='';
   $('nickname').value='';
-  $('promoCode').value='';
   load();
 });
 
@@ -293,8 +265,7 @@ function exportCSV(){
   const params = {
     start: $('startDate').value,
     end:   $('endDate').value,
-    nickname: $('nickname').value.trim(),
-    promoCode: $('promoCode').value.trim()
+    nickname: $('nickname').value.trim()
   };
   if(params.start && params.end && params.start > params.end){
     alert('开始日期不能晚于结束日期');
@@ -302,14 +273,14 @@ function exportCSV(){
   }
   fetchList(params).then(rows=>{
     if(!rows.length){ alert('当前条件下没有可导出的记录'); return; }
-    const head = ['id','用户昵称','充值金额','创建时间','推广码'];
+    const head = ['id','用户昵称','充值金额','创建时间'];
     const lines = [head.join(',')];
     rows.forEach(r=>{
       const nick = '"'+String(r.nickname).replace(/"/g,'""')+'"';
-      lines.push([r.id, nick, r.amount, r.createdAt, r.promoCode].join(','));
+      lines.push([r.id, nick, r.amount, r.createdAt].join(','));
     });
     const total = rows.reduce((s,r)=>s+r.amount,0);
-    lines.push(['合计','',''+total,'',''].join(',')]);
+    lines.push(['合计','',''+total,''].join(','));
     const csv = '\uFEFF' + lines.join('\r\n');   // BOM 保证 Excel 中文不乱码
     const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
     const url = URL.createObjectURL(blob);
@@ -326,10 +297,14 @@ function exportCSV(){
 
 $('btnExport').addEventListener('click',exportCSV);
 $('nickname').addEventListener('keydown',e=>{ if(e.key==='Enter') load(); });
-$('promoCode').addEventListener('keydown',e=>{ if(e.key==='Enter') load(); });
 
-/* 默认不预设日期区间，打开即显示全部数据，避免本地时区导致日期边界偏差 */
+/* 默认加载最近 7 天 */
 (function init(){
+  const end = new Date(2026,9,20);      // 2026-10-20
+  const start = new Date(2026,9,14);    // 2026-10-14
+  const p = n => String(n).padStart(2,'0');
+  $('endDate').value   = end.getFullYear()+'-'+p(end.getMonth()+1)+'-'+p(end.getDate());
+  $('startDate').value = start.getFullYear()+'-'+p(start.getMonth()+1)+'-'+p(start.getDate());
   load();
 })();
 </script>
