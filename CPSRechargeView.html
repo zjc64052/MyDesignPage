@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>推广码充值统计</title>
+<style>
+  :root{
+    --bg:#f5f7fa;
+    --card:#ffffff;
+    --line:#e8ecf1;
+    --text:#1f2733;
+    --sub:#6b7684;
+    --primary:#2f6bff;
+    --primary-hover:#1f55e0;
+    --radius:10px;
+    --shadow:0 1px 3px rgba(16,24,40,.06), 0 8px 24px rgba(16,24,40,.04);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    font-size:14px;
+    line-height:1.5;
+    padding:24px;
+  }
+  .wrap{max-width:1200px;margin:0 auto;}
+
+  /* 卡片 */
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+  }
+  .page-head{padding:20px 24px;border-bottom:1px solid var(--line);}
+  .page-head h1{margin:0;font-size:18px;font-weight:600;letter-spacing:.3px;}
+  .page-head p{margin:6px 0 0;color:var(--sub);font-size:13px;}
+
+  /* 筛选区 */
+  .filter{padding:18px 24px;display:flex;flex-wrap:wrap;gap:16px 20px;align-items:flex-end;}
+  .field{display:flex;flex-direction:column;gap:6px;}
+  .field label{font-size:13px;color:var(--sub);}
+  .field input{
+    height:36px;padding:0 12px;border:1px solid var(--line);border-radius:8px;
+    font-size:14px;color:var(--text);background:#fff;outline:none;transition:border-color .15s,box-shadow .15s;
+    font-family:inherit;
+  }
+  .field input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(47,107,255,.12);}
+  .field.dates{display:flex;flex-direction:row;align-items:flex-end;gap:8px;}
+  .field.dates .inputs{display:flex;align-items:center;gap:8px;}
+  .field.dates span{color:var(--sub);}
+  .btn{
+    height:36px;padding:0 18px;border:1px solid var(--line);background:#fff;border-radius:8px;
+    font-size:14px;color:var(--text);cursor:pointer;transition:.15s;font-family:inherit;
+  }
+  .btn:hover{border-color:#c9d3e0;background:#fafbfc;}
+  .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff;}
+  .btn.primary:hover{background:var(--primary-hover);border-color:var(--primary-hover);}
+
+  /* 汇总 */
+  .summary{
+    padding:14px 24px;display:flex;flex-wrap:wrap;gap:10px 32px;
+    border-top:1px dashed var(--line);background:#fafbff;border-radius:0;
+  }
+  .summary .item{display:flex;align-items:baseline;gap:8px;}
+  .summary .k{color:var(--sub);font-size:13px;}
+  .summary .v{font-size:15px;font-weight:600;}
+  .summary .v.amt{color:#e8590c;font-variant-numeric:tabular-nums;}
+
+  /* 表格 */
+  .table-box{padding:4px 24px 8px;overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;min-width:680px;}
+  thead th{
+    text-align:left;font-size:13px;font-weight:600;color:var(--sub);
+    padding:12px 12px;border-bottom:1px solid var(--line);white-space:nowrap;
+  }
+  tbody td{padding:14px 12px;border-bottom:1px solid #f1f4f8;vertical-align:middle;}
+  tbody tr:hover{background:#fafbff;}
+  tbody tr:last-child td{border-bottom:none;}
+  td.id{color:var(--sub);font-variant-numeric:tabular-nums;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;}
+  td.nick{font-weight:500;}
+  td.amt{font-variant-numeric:tabular-nums;font-weight:600;color:#1f2733;}
+  td.time{color:var(--sub);white-space:nowrap;font-variant-numeric:tabular-nums;}
+  td.promo{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:var(--primary);}
+  .empty{text-align:center;color:var(--sub);padding:48px 0;}
+
+  /* 合计行 */
+  tfoot td{
+    padding:13px 12px;border-top:2px solid var(--line);background:#fafbff;
+    font-weight:600;font-size:14px;
+  }
+  tfoot td.amt{color:#e8590c;font-variant-numeric:tabular-nums;}
+
+  @media (max-width:640px){
+    body{padding:12px;}
+    .filter,.summary,.page-head,.table-box{padding-left:16px;padding-right:16px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="page-head">
+      <h1>推广码充值统计</h1>
+      <p>按时间段、用户昵称与推广码筛选充值记录，查看对应合计数据。</p>
+    </div>
+
+    <!-- 筛选区 -->
+    <div class="filter">
+      <div class="field dates">
+        <label>创建时间</label>
+        <div class="inputs">
+          <input type="date" id="startDate">
+          <span>—</span>
+          <input type="date" id="endDate">
+        </div>
+      </div>
+      <div class="field">
+        <label for="nickname">用户昵称</label>
+        <input type="text" id="nickname" placeholder="请输入昵称关键词">
+      </div>
+      <div class="field">
+        <label for="promoCode">推广码</label>
+        <input type="text" id="promoCode" placeholder="请输入推广码" style="width:170px">
+      </div>
+      <button class="btn primary" id="btnSearch">查询</button>
+      <button class="btn" id="btnReset">重置</button>
+      <button class="btn" id="btnExport" style="margin-left:auto">导出</button>
+    </div>
+
+    <!-- 汇总 -->
+    <div class="summary">
+      <div class="item"><span class="k">筛选结果</span><span class="v" id="sumCount">0</span><span class="k">条记录</span></div>
+      <div class="item"><span class="k">充值金额合计</span><span class="v amt" id="sumAmount">¥0.00</span></div>
+    </div>
+
+    <!-- 表格 -->
+    <div class="table-box">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:120px">id</th>
+            <th>用户昵称</th>
+            <th style="width:160px">充值金额</th>
+            <th style="width:190px">创建时间</th>
+            <th style="width:150px">推广码</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3">合计</td>
+            <td class="amt" id="footAmount">¥0.00</td>
+            <td id="footCount"></td>
+          </tr>
+        </tfoot>
+      </table>
+      <div class="empty" id="emptyTip" style="display:none;">当前条件下没有匹配的记录</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============ 模拟数据（接入真实接口时替换 fetchList 即可） ============ */
+const MOCK = [
+  {id:10240,nickname:"清风徐来",amount:199.00,createdAt:"2026-10-20 21:05:12",promoCode:"TG2026A01"},
+  {id:10239,nickname:"星辰大海",amount:99.00,createdAt:"2026-10-20 18:42:30",promoCode:"TG2026A01"},
+  {id:10238,nickname:"阿波罗",amount:599.00,createdAt:"2026-10-20 16:11:58",promoCode:"VIP888"},
+  {id:10237,nickname:"橘子汽水",amount:89.00,createdAt:"2026-10-20 14:28:44",promoCode:"PROMO100"},
+  {id:10236,nickname:"云端漫步",amount:329.00,createdAt:"2026-10-20 11:55:21",promoCode:"VIP888"},
+  {id:10235,nickname:"北极星",amount:79.00,createdAt:"2026-10-20 09:40:33",promoCode:"TEST666"},
+  {id:10234,nickname:"夜行者",amount:259.00,createdAt:"2026-10-20 07:15:08",promoCode:"PROMO100"},
+  {id:10233,nickname:"小布丁",amount:29.00,createdAt:"2026-10-19 22:48:52",promoCode:"TG2026B17"},
+  {id:10232,nickname:"猫小九",amount:159.00,createdAt:"2026-10-19 20:02:55",promoCode:"NEW2026"},
+  {id:10231,nickname:"阿波罗",amount:99.00,createdAt:"2026-10-19 17:57:40",promoCode:"VIP888"},
+  {id:10230,nickname:"云端漫步",amount:499.00,createdAt:"2026-10-19 15:21:19",promoCode:"PROMO100"},
+  {id:10229,nickname:"星辰大海",amount:99.00,createdAt:"2026-10-19 13:09:00",promoCode:"TG2026C03"},
+  {id:10228,nickname:"阿波罗",amount:599.00,createdAt:"2026-10-19 10:05:17",promoCode:"VIP888"},
+  {id:10227,nickname:"橘子汽水",amount:89.00,createdAt:"2026-10-18 21:33:11",promoCode:"PROMO100"},
+  {id:10226,nickname:"夜行者",amount:399.00,createdAt:"2026-10-18 18:02:36",promoCode:"VIP888"},
+  {id:10225,nickname:"清风徐来",amount:199.00,createdAt:"2026-10-18 15:21:09",promoCode:"TG2026A01"},
+  {id:10224,nickname:"北极星",amount:299.00,createdAt:"2026-10-18 12:48:02",promoCode:"VIP888"},
+  {id:10223,nickname:"一只小狐狸",amount:699.00,createdAt:"2026-10-17 23:40:23",promoCode:"FOX666"},
+  {id:10222,nickname:"小笼包",amount:129.00,createdAt:"2026-10-17 20:05:11",promoCode:"NEW2026"},
+  {id:10221,nickname:"云端漫步",amount:499.00,createdAt:"2026-10-16 17:14:46",promoCode:"VIP888"},
+  {id:10220,nickname:"猫小九",amount:39.00,createdAt:"2026-10-15 14:33:47",promoCode:"TEST666"},
+  {id:10219,nickname:"阿波罗",amount:199.00,createdAt:"2026-10-15 11:00:00",promoCode:"VIP888"},
+  {id:10218,nickname:"小笼包",amount:59.00,createdAt:"2026-10-15 08:12:30",promoCode:"NEW2026"},
+  {id:10217,nickname:"云淡风轻",amount:49.00,createdAt:"2026-10-14 13:17:45",promoCode:"TG2026B17"},
+  {id:10216,nickname:"夜行者",amount:199.00,createdAt:"2026-10-13 19:26:11",promoCode:"TG2026C03"},
+  {id:10215,nickname:"橘子汽水",amount:159.00,createdAt:"2026-10-13 16:52:08",promoCode:"NEW2026"},
+  {id:10214,nickname:"北极星",amount:79.00,createdAt:"2026-10-12 12:44:19",promoCode:"PROMO100"},
+  {id:10213,nickname:"清风徐来",amount:199.00,createdAt:"2026-10-12 09:31:52",promoCode:"TG2026A01"},
+  {id:10212,nickname:"小布丁",amount:29.00,createdAt:"2026-10-11 20:08:37",promoCode:"TG2026B17"},
+  {id:10211,nickname:"星辰大海",amount:99.00,createdAt:"2026-10-11 10:55:00",promoCode:"TG2026C03"}
+];
+
+/* 模拟接口请求 */
+function fetchList(params){
+  return new Promise(resolve=>{
+    setTimeout(()=>{
+      let rows = MOCK.filter(r=>{
+        if(params.start && r.createdAt.slice(0,10) < params.start) return false;
+        if(params.end && r.createdAt.slice(0,10) > params.end) return false;
+        if(params.nickname && !r.nickname.toLowerCase().includes(params.nickname.toLowerCase())) return false;
+        if(params.promoCode && !r.promoCode.toLowerCase().includes(params.promoCode.toLowerCase())) return false;
+        return true;
+      });
+      resolve(rows);
+    },150);
+  });
+}
+
+/* ============ 页面逻辑 ============ */
+const $ = id => document.getElementById(id);
+const money = n => '¥' + n.toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+function fmtTime(s){
+  // 兼容 "YYYY-MM-DD HH:mm:ss" 与 ISO 格式
+  const d = s.includes('T') ? new Date(s) : new Date(s.replace(/-/g,'/'));
+  if(isNaN(d)) return s;
+  const p = n => String(n).padStart(2,'0');
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+}
+
+async function load(){
+  const params = {
+    start: $('startDate').value,
+    end:   $('endDate').value,
+    nickname: $('nickname').value.trim(),
+    promoCode: $('promoCode').value.trim()
+  };
+  if(params.start && params.end && params.start > params.end){
+    alert('开始日期不能晚于结束日期');
+    return;
+  }
+  const rows = await fetchList(params);
+  render(rows);
+}
+
+function render(rows){
+  const tb = $('tbody');
+  const empty = $('emptyTip');
+  tb.innerHTML = '';
+  if(!rows.length){
+    empty.style.display = 'block';
+    $('sumCount').textContent = '0';
+    $('sumAmount').textContent = money(0);
+    $('footAmount').textContent = money(0);
+    $('footCount').textContent = '';
+    return;
+  }
+  empty.style.display = 'none';
+  const frag = document.createDocumentFragment();
+  rows.forEach(r=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td class="id">'+r.id+'</td>'+
+      '<td class="nick">'+escapeHtml(r.nickname)+'</td>'+
+      '<td class="amt">'+money(r.amount)+'</td>'+
+      '<td class="time">'+fmtTime(r.createdAt)+'</td>'+
+      '<td class="promo">'+escapeHtml(r.promoCode)+'</td>';
+    frag.appendChild(tr);
+  });
+  tb.appendChild(frag);
+
+  const total = rows.reduce((s,r)=>s+r.amount,0);
+  $('sumCount').textContent = rows.length;
+  $('sumAmount').textContent = money(total);
+  $('footAmount').textContent = money(total);
+  $('footCount').textContent = '共 '+rows.length+' 条';
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* 事件 */
+$('btnSearch').addEventListener('click',load);
+$('btnReset').addEventListener('click',()=>{
+  $('startDate').value='';
+  $('endDate').value='';
+  $('nickname').value='';
+  $('promoCode').value='';
+  load();
+});
+
+/* 导出 CSV（按当前筛选条件，与列表结果完全一致） */
+function exportCSV(){
+  const params = {
+    start: $('startDate').value,
+    end:   $('endDate').value,
+    nickname: $('nickname').value.trim(),
+    promoCode: $('promoCode').value.trim()
+  };
+  if(params.start && params.end && params.start > params.end){
+    alert('开始日期不能晚于结束日期');
+    return;
+  }
+  fetchList(params).then(rows=>{
+    if(!rows.length){ alert('当前条件下没有可导出的记录'); return; }
+    const head = ['id','用户昵称','充值金额','创建时间','推广码'];
+    const lines = [head.join(',')];
+    rows.forEach(r=>{
+      const nick = '"'+String(r.nickname).replace(/"/g,'""')+'"';
+      lines.push([r.id, nick, r.amount, r.createdAt, r.promoCode].join(','));
+    });
+    const total = rows.reduce((s,r)=>s+r.amount,0);
+    lines.push(['合计','',''+total,'',''].join(',')]);
+    const csv = '\uFEFF' + lines.join('\r\n');   // BOM 保证 Excel 中文不乱码
+    const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const stamp = new Date().toISOString().slice(0,10);
+    a.download = '推广码充值统计_'+stamp+'.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+}
+
+$('btnExport').addEventListener('click',exportCSV);
+$('nickname').addEventListener('keydown',e=>{ if(e.key==='Enter') load(); });
+$('promoCode').addEventListener('keydown',e=>{ if(e.key==='Enter') load(); });
+
+/* 默认不预设日期区间，打开即显示全部数据，避免本地时区导致日期边界偏差 */
+(function init(){
+  load();
+})();
+</script>
+</body>
+</html>
