@@ -1,4 +1,5 @@
 # MyDesignPage
 设计页面
 
-index == 划拨积分记录页面设计
+PointsAllocationRecordPageDesign == 划拨积分记录页面设计
+CPSRechangeView == CPS推广充值页
